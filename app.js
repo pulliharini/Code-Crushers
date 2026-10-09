@@ -1,406 +1,47 @@
-// State Management
-const state = {
-    currentScreen: 'screen-welcome',
-    diagnosticScores: {},
-    retestScores: {},
-    currentQuestionIndex: 0,
-    currentQuiz: [],
-    weakTopics: [],
-    currentLearningTopicIndex: 0,
-    isRetest: false,
+const TOPICS = {
+  Variables: {icon:"⌘", explanation:"A variable is a named place to store a value so your program can use it later. Think of it like a labelled box: the label is the variable name and the contents are its value.", example:'score = 10\\nstudent_name = "Mira"\\nscore = score + 5', hint:"A variable name points to a value. When you assign a new value, the variable can change.", practice:{q:"If score = 10 and then score = score + 5, what is score?",options:["5","10","15","105"],answer:2,why:"score + 5 means 10 + 5, so the updated value is 15."}, advanced:{q:"What is printed by x = 3; x = x * 2; print(x)?",options:["3","5","6","x"],answer:2,why:"The second assignment replaces x with 3 × 2, which is 6."}},
+  Conditions: {icon:"◇", explanation:"A condition lets a program choose what to do. An if statement checks whether something is true; optional else code runs when it is false.", example:'temperature = 32\\nif temperature > 30:\\n    print("Hot")\\nelse:\\n    print("Cool")', hint:"Read the comparison first. Ask: is the condition true or false?", practice:{q:"If age = 16, which branch runs in `if age >= 18`?",options:["The condition is true","The condition is false","Both branches","Neither can run"],answer:1,why:"16 is less than 18, so age >= 18 is false."}, advanced:{q:"What is printed if n = 8 and the code checks n % 2 == 0?",options:["Odd","Even","8.0","Nothing always"],answer:1,why:"8 divided by 2 has remainder 0, so the condition is true and Even is printed."}},
+  Loops: {icon:"↻", explanation:"A loop repeats a block of instructions. Use a loop when you want to do the same kind of task several times without writing the same code repeatedly.", example:'for number in range(3):\\n    print(number)\\n\\n# prints 0, 1, 2', hint:"Count how many times the loop body runs. Check where the loop starts and where it stops.", practice:{q:"How many times does `for i in range(4)` run?",options:["3","4","5","It never runs"],answer:1,why:"range(4) produces 0, 1, 2, 3: four values, so the loop runs four times."}, advanced:{q:"What values are printed by `for i in range(2, 5)`?",options:["2, 3, 4","2, 3, 4, 5","0, 1, 2, 3, 4","3, 4, 5"],answer:0,why:"The start value is included and the stop value 5 is excluded."}},
+  Arrays: {icon:"▦", explanation:"An array (often called a list in Python) stores multiple values in one ordered collection. Each item has a position called an index; in many languages, indexing starts at 0.", example:'colors = ["red", "blue", "green"]\\nprint(colors[0])  # red\\nprint(colors[2])  # green', hint:"For zero-based indexing, the first item is at index 0—not index 1.", practice:{q:'What is the value of colors[1] in ["red", "blue", "green"]?',options:["red","blue","green","1"],answer:1,why:"Index 0 is red, index 1 is blue, and index 2 is green."}, advanced:{q:"How many items are in nums = [4, 7, 9, 2]?",options:["3","4","5","The index is 4"],answer:1,why:"There are four values in the list. The final index is 3, but the length is 4."}}
 };
-
-// Topics list
-const TOPICS = ['Variables', 'Conditions', 'Loops', 'Arrays'];
-
-// DOM Elements
-const elements = {
-    screens: document.querySelectorAll('.screen'),
-    nav: document.getElementById('progress-nav'),
-    navTopic: document.getElementById('nav-topic'),
-    navProgress: document.getElementById('nav-progress-fill'),
-    
-    // Welcome
-    btnStartDiag: document.getElementById('btn-start-diagnostic'),
-    
-    // Quiz
-    quizTitle: document.getElementById('quiz-title'),
-    qNum: document.getElementById('current-q-num'),
-    qTotal: document.getElementById('total-q-num'),
-    qText: document.getElementById('question-text'),
-    optionsContainer: document.getElementById('options-container'),
-    feedbackMsg: document.getElementById('feedback-message'),
-    btnNextQ: document.getElementById('btn-next-question'),
-    
-    // Analysis
-    overallScore: document.getElementById('overall-score'),
-    topicsGrid: document.getElementById('topics-grid'),
-    learningPath: document.getElementById('learning-path'),
-    btnStartLearning: document.getElementById('btn-start-learning'),
-    
-    // Learning
-    learningTopicTitle: document.getElementById('learning-topic-title'),
-    learningStatusBadge: document.getElementById('learning-status-badge'),
-    learningExplanation: document.getElementById('learning-explanation'),
-    learningExample: document.getElementById('learning-example'),
-    learningHint: document.getElementById('learning-hint'),
-    hintSection: document.getElementById('hint-section'),
-    practiceQText: document.getElementById('practice-question-text'),
-    practiceOptions: document.getElementById('practice-options-container'),
-    practiceFeedback: document.getElementById('practice-feedback'),
-    btnNextPractice: document.getElementById('btn-next-practice'),
-    
-    // Dashboard
-    finalDiagScore: document.getElementById('final-diag-score'),
-    finalRetestScore: document.getElementById('final-retest-score'),
-    finalImprovement: document.getElementById('final-improvement'),
-    comparisonTbody: document.getElementById('comparison-tbody'),
-    btnRestart: document.getElementById('btn-restart')
-};
-
-// --- Initialization ---
-
-function init() {
-    // Event Listeners
-    elements.btnStartDiag.addEventListener('click', startDiagnostic);
-    elements.btnNextQ.addEventListener('click', handleNextQuestion);
-    elements.btnStartLearning.addEventListener('click', startLearningModule);
-    elements.btnNextPractice.addEventListener('click', handleNextPractice);
-    elements.btnRestart.addEventListener('click', resetApp);
-    
-    showScreen('screen-welcome');
-}
-
-function showScreen(screenId) {
-    elements.screens.forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    state.currentScreen = screenId;
-    
-    if (screenId === 'screen-quiz' || screenId === 'screen-learning') {
-        elements.nav.classList.remove('hidden');
-    } else {
-        elements.nav.classList.add('hidden');
-    }
-}
-
-function updateProgress(current, total, topicText) {
-    const percentage = (current / total) * 100;
-    elements.navProgress.style.width = `${percentage}%`;
-    if (topicText) elements.navTopic.textContent = topicText;
-}
-
-// --- Diagnostic Quiz ---
-
-function startDiagnostic() {
-    state.isRetest = false;
-    state.currentQuiz = [...questionsDB]; // Assuming questionsDB is shuffled or used as is
-    state.currentQuestionIndex = 0;
-    
-    // Initialize scores
-    TOPICS.forEach(t => state.diagnosticScores[t] = { correct: 0, total: 0 });
-    
-    elements.quizTitle.textContent = "Diagnostic Assessment";
-    elements.qTotal.textContent = state.currentQuiz.length;
-    
-    loadQuestion();
-    showScreen('screen-quiz');
-}
-
-function loadQuestion() {
-    const q = state.currentQuiz[state.currentQuestionIndex];
-    elements.qNum.textContent = state.currentQuestionIndex + 1;
-    elements.qText.textContent = q.text;
-    updateProgress(state.currentQuestionIndex, state.currentQuiz.length, `Diagnostic: ${q.topic}`);
-    
-    elements.optionsContainer.innerHTML = '';
-    elements.feedbackMsg.className = 'feedback hidden';
-    elements.btnNextQ.classList.add('hidden');
-    
-    q.options.forEach((opt, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.textContent = opt;
-        btn.onclick = () => selectOption(btn, index, q);
-        elements.optionsContainer.appendChild(btn);
-    });
-}
-
-function selectOption(btn, selectedIndex, q) {
-    // Disable all options
-    const allBtns = elements.optionsContainer.querySelectorAll('.option-btn');
-    allBtns.forEach(b => b.disabled = true);
-    
-    const isCorrect = selectedIndex === q.correctAnswer;
-    
-    // Record score
-    const scoreObj = state.isRetest ? state.retestScores : state.diagnosticScores;
-    scoreObj[q.topic].total++;
-    if (isCorrect) scoreObj[q.topic].correct++;
-    
-    // Visual feedback
-    btn.classList.add('selected');
-    allBtns[q.correctAnswer].classList.add('correct');
-    if (!isCorrect) {
-        btn.classList.add('incorrect');
-    }
-    
-    elements.feedbackMsg.textContent = isCorrect ? '✅ Correct! ' + q.explanation : '❌ Incorrect. ' + q.explanation;
-    elements.feedbackMsg.className = `feedback ${isCorrect ? 'success' : 'error'}`;
-    
-    elements.btnNextQ.classList.remove('hidden');
-    
-    if (state.isRetest && !isCorrect && state.currentQuestionIndex === state.currentQuiz.length -1) {
-       elements.btnNextQ.textContent = 'Finish Retest';
-    } else if (!state.isRetest && state.currentQuestionIndex === state.currentQuiz.length - 1) {
-        elements.btnNextQ.textContent = 'Analyze Results';
-    } else {
-        elements.btnNextQ.textContent = 'Next';
-    }
-}
-
-function handleNextQuestion() {
-    state.currentQuestionIndex++;
-    if (state.currentQuestionIndex < state.currentQuiz.length) {
-        loadQuestion();
-    } else {
-        if (state.isRetest) {
-            showDashboard();
-        } else {
-            showAnalysis();
-        }
-    }
-}
-
-// --- Analysis Screen ---
-
-function getStatusInfo(percentage) {
-    if (percentage >= 80) return { label: 'Strong', class: 'strong' };
-    if (percentage >= 60) return { label: 'Moderate', class: 'moderate' };
-    if (percentage >= 40) return { label: 'Weak', class: 'weak' };
-    return { label: 'Needs Attention', class: 'attention' };
-}
-
-function showAnalysis() {
-    let totalCorrect = 0;
-    let totalQs = 0;
-    
-    elements.topicsGrid.innerHTML = '';
-    state.weakTopics = [];
-    
-    TOPICS.forEach(topic => {
-        const stats = state.diagnosticScores[topic];
-        const pct = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-        
-        totalCorrect += stats.correct;
-        totalQs += stats.total;
-        
-        const status = getStatusInfo(pct);
-        
-        if (pct < 80) {
-            state.weakTopics.push({ topic, pct });
-        }
-        
-        const card = document.createElement('div');
-        card.className = `topic-card ${status.class}`;
-        card.innerHTML = `
-            <h4>${topic}</h4>
-            <div style="font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">${pct}%</div>
-            <div class="status-badge">${status.label}</div>
-        `;
-        elements.topicsGrid.appendChild(card);
-    });
-    
-    const overallPct = Math.round((totalCorrect / totalQs) * 100);
-    elements.overallScore.textContent = `${overallPct}%`;
-    
-    // Sort weak topics by lowest score first
-    state.weakTopics.sort((a, b) => a.pct - b.pct);
-    
-    elements.learningPath.innerHTML = '';
-    if (state.weakTopics.length === 0) {
-        elements.learningPath.innerHTML = '<p>Great job! You have a strong grasp of all concepts. No targeted learning required.</p>';
-        elements.btnStartLearning.textContent = 'Take Retest Anyway';
-    } else {
-        state.weakTopics.forEach((t, i) => {
-            const step = document.createElement('div');
-            step.className = 'path-step';
-            step.innerHTML = `
-                <div class="step-number">${i + 1}</div>
-                <div>
-                    <strong>${t.topic}</strong>
-                    <div style="font-size: 0.9rem; color: var(--text-muted)">Currently at ${t.pct}%. Needs improvement.</div>
-                </div>
-            `;
-            elements.learningPath.appendChild(step);
-        });
-        elements.btnStartLearning.textContent = 'Start Adaptive Learning';
-    }
-    
-    showScreen('screen-analysis');
-}
-
-// --- Learning Module ---
-
-function startLearningModule() {
-    if (state.weakTopics.length === 0) {
-        startRetest();
-        return;
-    }
-    
-    state.currentLearningTopicIndex = 0;
-    loadLearningTopic();
-    showScreen('screen-learning');
-}
-
-function loadLearningTopic() {
-    const topicData = state.weakTopics[state.currentLearningTopicIndex];
-    const moduleInfo = learningModules[topicData.topic];
-    
-    elements.learningTopicTitle.textContent = `Learning: ${topicData.topic}`;
-    elements.learningStatusBadge.textContent = 'Reviewing';
-    
-    elements.learningExplanation.textContent = moduleInfo.explanation;
-    elements.learningExample.textContent = moduleInfo.example;
-    elements.learningHint.textContent = moduleInfo.hint;
-    
-    // Show hint by default to provide extra support for weak topics
-    elements.hintSection.classList.remove('hidden');
-    
-    updateProgress(state.currentLearningTopicIndex, state.weakTopics.length, `Learning: ${topicData.topic}`);
-    
-    // Load Practice Question
-    elements.practiceQText.textContent = moduleInfo.practice.text;
-    elements.practiceOptions.innerHTML = '';
-    elements.practiceFeedback.className = 'feedback hidden';
-    elements.btnNextPractice.classList.add('hidden');
-    
-    moduleInfo.practice.options.forEach((opt, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.textContent = opt;
-        btn.onclick = () => selectPracticeOption(btn, index, moduleInfo.practice);
-        elements.practiceOptions.appendChild(btn);
-    });
-}
-
-function selectPracticeOption(btn, selectedIndex, practiceInfo) {
-    const allBtns = elements.practiceOptions.querySelectorAll('.option-btn');
-    allBtns.forEach(b => b.disabled = true);
-    
-    const isCorrect = selectedIndex === practiceInfo.correctAnswer;
-    
-    btn.classList.add('selected');
-    allBtns[practiceInfo.correctAnswer].classList.add('correct');
-    if (!isCorrect) btn.classList.add('incorrect');
-    
-    elements.practiceFeedback.textContent = isCorrect ? '✅ Spot on! ' + practiceInfo.explanation : '💡 Let\'s try again. ' + practiceInfo.explanation;
-    elements.practiceFeedback.className = `feedback ${isCorrect ? 'success' : 'error'}`;
-    
-    elements.btnNextPractice.classList.remove('hidden');
-    
-    if (state.currentLearningTopicIndex === state.weakTopics.length - 1) {
-        elements.btnNextPractice.textContent = 'Proceed to Retest';
-    } else {
-        elements.btnNextPractice.textContent = 'Next Topic';
-    }
-}
-
-function handleNextPractice() {
-    state.currentLearningTopicIndex++;
-    if (state.currentLearningTopicIndex < state.weakTopics.length) {
-        loadLearningTopic();
-    } else {
-        startRetest();
-    }
-}
-
-// --- Retest ---
-
-function startRetest() {
-    state.isRetest = true;
-    
-    // Only retest weak topics
-    const topicsToRetest = state.weakTopics.length > 0 ? state.weakTopics.map(t => t.topic) : TOPICS;
-    
-    state.currentQuiz = retestDB.filter(q => topicsToRetest.includes(q.topic));
-    
-    if (state.currentQuiz.length === 0) {
-         // Fallback if no specific retest questions (should not happen based on DB)
-         showDashboard();
-         return;
-    }
-    
-    state.currentQuestionIndex = 0;
-    
-    TOPICS.forEach(t => state.retestScores[t] = { correct: 0, total: 0 });
-    
-    elements.quizTitle.textContent = "Reassessment";
-    elements.qTotal.textContent = state.currentQuiz.length;
-    
-    loadQuestion();
-    showScreen('screen-quiz');
-}
-
-// --- Dashboard ---
-
-function showDashboard() {
-    let diagCorrect = 0, diagTotal = 0;
-    let retestCorrect = 0, retestTotal = 0;
-    
-    elements.comparisonTbody.innerHTML = '';
-    
-    TOPICS.forEach(topic => {
-        const dStats = state.diagnosticScores[topic];
-        const rStats = state.retestScores[topic];
-        
-        const dPct = dStats.total > 0 ? Math.round((dStats.correct / dStats.total) * 100) : 0;
-        
-        diagCorrect += dStats.correct;
-        diagTotal += dStats.total;
-        
-        // If topic wasn't retested, copy old score, else use new score
-        const rPct = rStats.total > 0 
-            ? Math.round((rStats.correct / rStats.total) * 100)
-            : dPct;
-            
-        if (rStats.total > 0) {
-            retestCorrect += rStats.correct;
-            retestTotal += rStats.total;
-        } else {
-            retestCorrect += dStats.correct;
-            retestTotal += dStats.total;
-        }
-        
-        const diff = rPct - dPct;
-        const diffStr = diff > 0 ? `+${diff}%` : (diff < 0 ? `${diff}%` : `0%`);
-        const statusClass = diff > 0 ? 'improvement-up' : 'improvement-same';
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${topic}</strong></td>
-            <td>${dPct}%</td>
-            <td>${rPct}%</td>
-            <td class="${statusClass}">${diffStr}</td>
-        `;
-        elements.comparisonTbody.appendChild(tr);
-    });
-    
-    const overallDiagPct = Math.round((diagCorrect / diagTotal) * 100);
-    const overallRetestPct = Math.round((retestCorrect / retestTotal) * 100);
-    const overallDiff = overallRetestPct - overallDiagPct;
-    
-    elements.finalDiagScore.textContent = `${overallDiagPct}%`;
-    elements.finalRetestScore.textContent = `${overallRetestPct}%`;
-    
-    elements.finalImprovement.textContent = overallDiff > 0 ? `+${overallDiff}%` : `${overallDiff}%`;
-    elements.finalImprovement.className = `score-lg ${overallDiff > 0 ? 'positive' : ''}`;
-    
-    showScreen('screen-dashboard');
-}
-
-function resetApp() {
-    init();
-}
-
-// Start
-document.addEventListener('DOMContentLoaded', init);
+const diagnostic = [
+ {topic:"Variables",q:"What is a variable mainly used for?",o:["To store a value under a name","To repeat code","To compare two files","To stop a program"],a:0,e:"Variables store values that a program can use or update."},
+ {topic:"Variables",q:"If x = 4 and then x = 7, what is the current value of x?",o:["4","7","11","47"],a:1,e:"The latest assignment makes x equal to 7."},
+ {topic:"Conditions",q:"Which keyword starts a decision in Python?",o:["repeat","if","loop","let"],a:1,e:"The if keyword checks a condition before running a block."},
+ {topic:"Conditions",q:"What is the result of 5 > 9?",o:["True","False","9","An error every time"],a:1,e:"Five is not greater than nine, so the comparison is false."},
+ {topic:"Loops",q:"Why would you use a loop?",o:["To store one value","To repeat instructions","To rename a variable","To create a comment"],a:1,e:"Loops repeat instructions, often over a range or collection."},
+ {topic:"Loops",q:"How many values are in range(3) in Python?",o:["2","3","4","It depends on the computer"],a:1,e:"range(3) gives 0, 1, and 2: three values."},
+ {topic:"Arrays",q:"What is a key benefit of an array/list?",o:["Stores multiple items together","Always makes code faster","Only stores text","Ends a loop"],a:0,e:"Collections let you store and access several values under one name."},
+ {topic:"Arrays",q:"In a zero-indexed list, what is the index of the first item?",o:["-1","0","1","It has no index"],a:1,e:"Zero-based indexing starts at 0."}
+];
+const retest = [
+ {topic:"Variables",q:"If lives = 3 and lives = lives - 1, what is lives now?",o:["1","2","3","4"],a:1,e:"The new value is 3 - 1, which equals 2."},
+ {topic:"Variables",q:'Which assignment stores the text "hello" in a variable called message?',o:['message == "hello"','"hello" = message','message = "hello"','message("hello")'],a:2,e:'The assignment operator = stores the right-hand value in the variable on the left.'},
+ {topic:"Conditions",q:"A program should print 'Pass' when mark is at least 50. Which condition fits?",o:["mark < 50","mark == 0","mark >= 50","mark > 100"],a:2,e:"At least 50 means 50 or higher, written mark >= 50."},
+ {topic:"Conditions",q:"If is_raining is False, what does `not is_raining` evaluate to?",o:["False","True","None","It cannot be checked"],a:1,e:"The not operator reverses a Boolean value, so not False is True."},
+ {topic:"Loops",q:"What does `for i in range(1, 4)` produce?",o:["1, 2, 3","1, 2, 3, 4","0, 1, 2, 3","2, 3, 4"],a:0,e:"The starting value 1 is included; the stopping value 4 is excluded."},
+ {topic:"Loops",q:"Which task is a good fit for a loop?",o:["Print each name in a class list","Choose a variable name once","Compare two values once","Write a program title"],a:0,e:"A loop can process every name in a collection without repeating the same statement manually."},
+ {topic:"Arrays",q:'For values = ["A", "B", "C"], what is values[2]?',o:["A","B","C","2"],a:2,e:"The index positions are 0 → A, 1 → B, 2 → C."},
+ {topic:"Arrays",q:"What is the length of items = [8, 6, 4]?",o:["2","3","4","The last index is 3"],a:1,e:"The collection has three items; its last zero-based index is 2."}
+];
+const state={page:"home",mode:"diagnostic",questions:diagnostic,idx:0,answers:[],diagnostic:null,retest:null,learnTopic:null,practiceCorrect:0,practiceAttempts:0,practiceChoice:null};
+const $=id=>document.getElementById(id);
+const topicNames=Object.keys(TOPICS);
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function go(page){state.page=page;document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const el=$('page-'+page);if(el)el.classList.add('active');document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('crumb').textContent=({home:"Overview",learn:"Learning path",progress:"My progress",quiz:"Assessment",results:"Results",module:"Learning module"})[page]||"Overview";window.scrollTo({top:0,behavior:'smooth'});if(page==='learn')renderLearning();if(page==='progress')renderProgress();}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function startQuiz(mode){state.mode=mode;state.questions=mode==='diagnostic'?diagnostic:retest;state.idx=0;state.answers=[];go('quiz');renderQuestion();}
+function renderQuestion(){const q=state.questions[state.idx];const total=state.questions.length;$('quizLabel').textContent=state.mode==='diagnostic'?'DIAGNOSTIC ASSESSMENT':'TARGETED RETEST';$('quizTitle').textContent=state.mode==='diagnostic'?"Let's find your starting point.":"Let's check what has clicked."; $('quizSubtitle').textContent=state.mode==='diagnostic'?'Choose the best answer. This is a learning guide, not a grade.':'New questions, same core concepts. Take your time.';$('questionCount').textContent=`QUESTION ${state.idx+1} OF ${total}`;$('topicTag').textContent=q.topic.toUpperCase();$('questionNumber').textContent=String(state.idx+1).padStart(2,'0');$('questionText').textContent=q.q;$('quizProgress').style.width=`${((state.idx+1)/total)*100}%`;const chosen=state.answers[state.idx];$('answerOptions').innerHTML=q.o.map((o,i)=>`<button class="answer-option ${chosen===i?'selected':''}" data-answer="${i}"><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${escapeHTML(o)}</span></button>`).join('');document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>{state.answers[state.idx]=Number(b.dataset.answer);renderQuestion();}));$('nextQuestion').disabled=chosen===undefined;$('nextQuestion').innerHTML=state.idx===total-1?'See my results <span>→</span>':'Next question <span>→</span>';$('selectionHint').textContent=chosen===undefined?'Select one answer to continue.':'Answer selected — you can change it before continuing.';}
+function scoreAttempt(questions,answers){const per={};topicNames.forEach(t=>per[t]={correct:0,total:0,percent:0,status:'Needs Attention'});let correct=0;questions.forEach((q,i)=>{per[q.topic].total++;if(answers[i]===q.a){correct++;per[q.topic].correct++;}});Object.values(per).forEach(v=>{v.percent=v.total?Math.round(v.correct/v.total*100):0;v.status=statusFor(v.percent);});return {overall:Math.round(correct/questions.length*100),correct,total:questions.length,per,questions:questions.map((q,i)=>({...q,selected:answers[i],correct:answers[i]===q.a}))};}
+function statusFor(n){return n>=80?'Strong':n>=60?'Moderate':n>=40?'Weak':'Needs Attention'}
+function statusClass(s){return s==='Strong'?'strong':s==='Moderate'?'moderate':s==='Weak'?'weak':'needs'}
+function gapText(topic,p){if(p>=80)return 'You are showing a solid grasp of this concept. Keep it fresh with occasional review.';if(p>=60)return 'You have a useful foundation. A little focused practice can make this feel more consistent.';if(p>=40)return 'Some of the core idea is there. Review the example, then try a few guided questions.';return `Let's revisit the basics of ${topic.toLowerCase()} with a simpler explanation and a worked example.`}
+function finishQuiz(){const result=scoreAttempt(state.questions,state.answers);if(state.mode==='diagnostic'){state.diagnostic=result;state.retest=null;renderResults();go('results');}else{state.retest=result;renderProgress();go('progress');}}
+function renderResults(){const r=state.diagnostic;if(!r){$('resultsContent').innerHTML='<div class="panel empty-state"><h3>Start with a diagnostic</h3><p>Take the short assessment so we can build a learning path for you.</p><button class="primary-btn" onclick="startQuiz(\'diagnostic\')">Start diagnostic →</button></div>';return;}const priority=topicNames.slice().sort((a,b)=>r.per[a].percent-r.per[b].percent)[0];$('resultsContent').innerHTML=`<div class="result-hero"><div class="score-card"><small>DIAGNOSTIC SCORE</small><div class="score-number">${r.overall}<span>/100</span></div><p>${r.correct} correct answers out of ${r.total}. This is your starting point—not a label.</p></div><div class="panel insight-card"><div class="eyebrow muted">YOUR LEARNING INSIGHT</div><h3>${r.per[priority].percent<60?'Let’s strengthen '+priority.toLowerCase()+'.':'Build on your foundation.'}</h3><p>${r.per[priority].percent<60?`Your answers suggest ${priority.toLowerCase()} is the most useful place to start. We’ll focus there first, with short explanations and guided practice.`:'You have a promising starting point. We’ll prioritize any topic below 80% and use practice to make your understanding more consistent.'}</p><p><b>How to read this:</b> topic labels use prototype thresholds, not validated educational standards.</p></div></div><div class="section-heading"><div><div class="eyebrow muted">TOPIC-BY-TOPIC</div><h2>Where you are right now</h2></div></div><div class="topic-results">${topicNames.map(t=>`<article class="topic-result"><div class="topic-result-top"><h3>${TOPICS[t].icon} ${t}</h3><span class="score-small">${r.per[t].percent}%</span></div><div class="topic-meter"><span style="width:${r.per[t].percent}%"></span></div><span class="status ${statusClass(r.per[t].status)}">${r.per[t].status}</span><p>${gapText(t,r.per[t].percent)}</p></article>`).join('')}</div><div class="panel"><div class="eyebrow muted">WHAT'S NEXT</div><h3 style="margin-top:8px">Turn your results into a plan.</h3><p style="color:#7f8a9d;line-height:1.7;font-size:12px">Your learning path puts the lowest-scoring topics first and offers a short lesson, example, hint, and practice question for each.</p><div class="action-row"><button class="primary-btn" id="toLearning">View my learning path <span>→</span></button><button class="secondary-btn" id="reviewAnswers">Review answers</button></div><div id="answerReview"></div></div>`;$('toLearning').onclick=()=>{go('learn');renderLearning()};$('reviewAnswers').onclick=()=>{const target=$('answerReview');target.innerHTML=r.questions.map((q,i)=>`<div style="padding:12px 0;border-top:1px solid #edf0f5"><b style="font-size:12px">${i+1}. ${escapeHTML(q.q)}</b><p style="font-size:11px;color:${q.correct?'#218c68':'#bd6a35'};line-height:1.6;margin:7px 0">${q.correct?'✓ Correct':'↻ Review'} — ${q.selected===undefined?'No answer selected':`Your answer: ${escapeHTML(q.o[q.selected])}`}<br><span style="color:#758195">${escapeHTML(q.e)}</span></p></div>`).join('');};}
+function sortedTopics(){if(!state.diagnostic)return topicNames;return topicNames.slice().sort((a,b)=>state.diagnostic.per[a].percent-state.diagnostic.per[b].percent)}
+function renderLearning(){if(!state.diagnostic){$('learningContent').innerHTML='<div class="panel empty-state"><h3>Your path starts with a quick check-in.</h3><p>Complete the diagnostic first. We will use your answers to prioritize the right topics.</p><button class="primary-btn" onclick="startQuiz(\'diagnostic\')">Start diagnostic →</button></div>';return;}const sorted=sortedTopics();$('learningContent').innerHTML=`<div class="panel" style="margin-bottom:17px"><div class="eyebrow muted">YOUR RECOMMENDED SEQUENCE</div><h3 style="margin:8px 0">A little practice, targeted to you.</h3><p style="color:#7f8a9d;font-size:12px;line-height:1.7;margin:0">Topics are ordered by your diagnostic performance. If a topic is already strong, use it as a quick review rather than spending extra time there.</p></div><div class="learning-list">${sorted.map((t,i)=>{const p=state.diagnostic.per[t].percent;const focus=p<60?'Priority: your diagnostic suggests this concept needs more support.':p<80?'Build confidence: reinforce the concept with a focused example.':'Quick review: you have a strong result here; keep it fresh.';return `<article class="learning-card"><div class="learning-icon">${TOPICS[t].icon}</div><div><div class="feature-step">STEP ${String(i+1).padStart(2,'0')} · ${p}% IN DIAGNOSTIC</div><h3>${t}</h3><p>${escapeHTML(TOPICS[t].explanation.slice(0,112))}…</p><div class="reason">${focus}</div></div><button class="secondary-btn" data-learn="${t}">Open lesson →</button></article>`}).join('')}</div><div class="action-row"><button class="primary-btn" id="beginRetest">I'm ready to retest <span>→</span></button></div><p style="font-size:10px;color:#9aa3b1;margin-bottom:35px">The retest uses a different set of questions to check the same four concepts.</p>`;document.querySelectorAll('[data-learn]').forEach(b=>b.onclick=()=>openModule(b.dataset.learn));$('beginRetest').onclick=()=>startQuiz('retest');}
+function openModule(topic){state.learnTopic=topic;state.practiceChoice=null;state.practiceCorrect=0;state.practiceAttempts=0;const t=TOPICS[topic];const p=state.diagnostic?.per[topic]?.percent??0;const simplified=p<40;const lesson=simplified?`Let's make ${topic.toLowerCase()} simpler. ${t.explanation} Start with one small example and say what each line does.`:t.explanation;$('moduleContent').innerHTML=`<div class="module-grid"><article class="module-panel"><div class="eyebrow muted">LEARNING MODULE · ${topic.toUpperCase()}</div><h2>${topic}: the building blocks</h2><p>${escapeHTML(lesson)}</p>${simplified?'<div class="hint-box">🌱 Try this: read one line at a time. You do not need to memorize everything at once.</div>':''}<h3>Worked example</h3><div class="example-box">${escapeHTML(t.example).replace(/\\n/g,'<br>')}</div><p>${escapeHTML(t.hint)}</p><div class="hint-box">💡 Helpful hint: ${escapeHTML(t.hint)}</div><button class="secondary-btn" id="backPath">← Back to my learning path</button></article><article class="module-panel"><div class="eyebrow muted">QUICK PRACTICE</div><h2 style="font-size:20px">Check your understanding</h2><p id="practicePrompt">${escapeHTML(t.practice.q)}</p><div id="practiceOptions">${t.practice.options.map((o,i)=>`<button class="practice-option" data-practice="${i}">${String.fromCharCode(65+i)}. ${escapeHTML(o)}</button>`).join('')}</div><div id="practiceFeedback" class="feedback-box" role="status"></div><div style="margin-top:17px"><button class="primary-btn" id="nextPractice" disabled>Try a challenge <span>→</span></button></div><p style="font-size:10px">Support adapts: if this feels difficult, review the hint. If it feels easy, try the challenge question.</p></article></div>`;go('module');wirePractice(false);$('backPath').onclick=()=>go('learn');}
+function wirePractice(advanced){const t=TOPICS[state.learnTopic];const q=advanced?t.advanced:t.practice;state.practiceChoice=null;$('practicePrompt').textContent=q.q;$('practiceOptions').innerHTML=q.options.map((o,i)=>`<button class="practice-option" data-practice="${i}">${String.fromCharCode(65+i)}. ${escapeHTML(o)}</button>`).join('');$('practiceFeedback').className='feedback-box';$('practiceFeedback').textContent='';$('nextPractice').disabled=true;$('nextPractice').innerHTML=advanced?'Return to learning path <span>→</span>':'Try a challenge <span>→</span>';document.querySelectorAll('[data-practice]').forEach(b=>b.onclick=()=>{if(state.practiceChoice!==null)return;state.practiceChoice=Number(b.dataset.practice);const good=state.practiceChoice===q.answer;state.practiceAttempts++;if(good)state.practiceCorrect++;document.querySelectorAll('[data-practice]').forEach(x=>x.disabled=true);b.classList.add('selected');const fb=$('practiceFeedback');fb.className='feedback-box show '+(good?'correct':'incorrect');fb.innerHTML=`<b>${good?'✓ Exactly right!':'Not quite — that’s okay.'}</b><br>${escapeHTML(q.why)}${!good?'<br><br>Take another look at the example and hint above.':''}`;$('nextPractice').disabled=false;$('nextPractice').textContent=advanced?'Return to learning path':'Try a challenge →';});$('nextPractice').onclick=()=>{if(!advanced){wirePractice(true);toast('Challenge unlocked — let’s build on that.');}else{go('learn');renderLearning();toast('Nice work. Your practice is complete.');}}}
+function renderProgress(){const root=$('progressContent');if(!state.diagnostic){root.innerHTML='<div class="panel empty-state"><h3>Your progress story starts here.</h3><p>Complete the diagnostic, learn a concept, and retest to see your scores side by side.</p><button class="primary-btn" onclick="startQuiz(\'diagnostic\')">Start diagnostic →</button></div>';return;}const before=state.diagnostic,after=state.retest;root.innerHTML=`<div class="result-hero"><div class="score-card"><small>${after?'RETEST SCORE':'DIAGNOSTIC SCORE'}</small><div class="score-number">${after?after.overall:before.overall}<span>/100</span></div><p>${after?`${after.correct} correct out of ${after.total}. Compare your results below.`:'Complete the learning path and retest to unlock your before-and-after comparison.'}</p></div><div class="panel insight-card"><div class="eyebrow muted">YOUR LEARNING STORY</div><h3>${after?(after.overall-before.overall>0?'You made progress. Keep going!':after.overall===before.overall?'Consistency is useful data.':'Every retest helps guide your next step.'):'Your baseline is ready.'}</h3><p>${after?`Overall change: ${after.overall-before.overall>0?'+':''}${after.overall-before.overall} percentage points. This is calculated from your actual answers in this demo.`:'Your initial scores are saved in this session. Work through a lesson, then take a new set of questions to check for change.'}</p><p>These scores are a learning aid, not a formal evaluation of ability.</p></div></div>${after?`<div class="panel"><div class="eyebrow muted">BEFORE & AFTER</div><h3 style="margin-top:8px">Topic-level comparison</h3><div class="legend"><span><i></i>Diagnostic</span><span><i class="after-dot"></i>Retest</span></div>${topicNames.map(t=>`<div class="bar-row"><span class="bar-label">${t}</span><div class="compare-bars"><div class="bar"><span style="width:${before.per[t].percent}%"></span></div><div class="bar after"><span style="width:${after.per[t].percent}%"></span></div></div><span class="bar-value">${before.per[t].percent}% → ${after.per[t].percent}%</span></div><div style="font-size:10px;color:#7f8a9d;margin:8px 0 18px">${t}: ${after.per[t].percent>before.per[t].percent?'Improved':after.per[t].percent===before.per[t].percent?'Stayed the same':'Needs more practice'} · ${after.per[t].status}</div>`).join('')}</div><div class="panel" style="margin-top:15px"><div class="eyebrow muted">NEXT BEST STEP</div><h3 style="margin-top:8px">${escapeHTML(topicNames.slice().sort((a,b)=>after.per[a].percent-after.per[b].percent)[0])} is your next focus.</h3><p style="font-size:12px;color:#7f8a9d;line-height:1.7">Continue with a short lesson and practice on your lowest-scoring retest topic. The system recommends this based on your current answers.</p><div class="action-row"><button class="primary-btn" id="nextLesson">Continue learning <span>→</span></button><button class="secondary-btn" id="redo">Try retest again</button></div></div>`:`<div class="panel"><div class="eyebrow muted">TOPIC PROGRESS</div><h3 style="margin-top:8px">Your starting scores</h3>${topicNames.map(t=>`<div class="bar-row"><span class="bar-label">${t}</span><div class="bar"><span style="width:${before.per[t].percent}%"></span></div><span class="bar-value">${before.per[t].percent}%</span></div>`).join('')}<div class="action-row"><button class="primary-btn" id="goLearn">Continue to learning path <span>→</span></button></div></div>`}`;if(after){$('nextLesson').onclick=()=>{const t=topicNames.slice().sort((a,b)=>after.per[a].percent-after.per[b].percent)[0];openModule(t)};$('redo').onclick=()=>startQuiz('retest');}else $('goLearn').onclick=()=>{go('learn');renderLearning()};}
+function resetDemo(){state.diagnostic=null;state.retest=null;state.answers=[];state.idx=0;go('home');toast('Demo reset. Ready for a fresh start!')}
+$('startDiagnostic').onclick=()=>startQuiz('diagnostic');$('nextQuestion').onclick=()=>{if(state.answers[state.idx]===undefined)return;if(state.idx<state.questions.length-1){state.idx++;renderQuestion()}else finishQuiz()};$('quizBack').onclick=()=>go('home');$('moduleBack').onclick=()=>{go('learn');renderLearning()};$('resetBtn').onclick=()=>{if(confirm('Reset all demo progress and start again?'))resetDemo()};document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>{if(b.dataset.page==='learn'&&!state.diagnostic){go('learn');renderLearning()}else go(b.dataset.page)});renderProgress();

@@ -1,33 +1,45 @@
-# Code Crushers AI Adaptive Learning System
+# Code Crushers — AI-Powered Adaptive Learning Prototype
 
-## Project Context
-**Team:** Code Crushers
-**Event:** TechSprint 2026 — SDG Hackathon
-**SDG:** 4 — Quality Education
+A no-build, browser-based hackathon prototype for TechSprint 2026 / SDG 4: Quality Education.
 
-## Features
-- **Diagnostic Quiz:** Short assessment on variables, conditions, loops, and arrays.
-- **Gap Analysis:** Identifies "Strong", "Moderate", "Weak", or "Needs Attention" areas.
-- **Adaptive Learning Path:** Personalized study path based entirely on the demonstrated gaps.
-- **Learning Modules:** Concept explanations, code examples, hints, and targeted practice questions.
-- **Reassessment:** A retest module tailored specifically to address weak areas.
-- **Progress Dashboard:** Shows clear percentages measuring learning improvements.
+## Run locally
+1. Download and unzip the project.
+2. Open `index.html` in Chrome, Edge, Firefox, or another modern browser.
+3. Click **Start diagnostic** and complete the eight questions.
+4. Review the topic-level results, open lessons from the learning path, answer practice questions, and take the retest.
+5. Open **My progress** to compare diagnostic and retest scores.
 
-## Setup and Run Instructions
-This project uses vanilla HTML, CSS, and JS (No build steps required!).
+No installation, backend, or API key is required. For the smoothest experience, use a local static server or deploy the folder to Vercel.
 
-1. Open the project folder.
-2. Double click on `index.html` to open it in any web browser.
-3. No environment variables, dependencies, or installations are required.
+## Prototype flow
+**Diagnose → Identify → Adapt → Practice → Retest → Measure**
 
-## Technical Details
-- Designed natively with CSS variables, Glassmorphism UI, and dark mode optimizations.
-- State is managed locally in JavaScript arrays and objects.
+- Diagnostic and retest contain different questions across Variables, Conditions, Loops, and Arrays.
+- Overall and per-topic scores are calculated from the answers submitted.
+- Topic labels use configurable prototype thresholds in `app.js`: Strong ≥ 80%, Moderate ≥ 60%, Weak ≥ 40%, Needs Attention < 40%.
+- The learning path prioritizes the lowest-scoring topics.
+- Lessons provide a beginner-friendly explanation, a worked example, a hint, and two levels of practice.
+- Progress comparisons are based on the actual diagnostic and retest attempts in the current browser session.
 
-## Demo Flow
-1. Start the diagnostic on the Landing Screen.
-2. Complete questions to generate a score.
-3. See gap analysis and topic mastery grid.
-4. Go through adaptive learning for your weakest subjects.
-5. Take the reassessment.
-6. Check your before & after progress.
+## Architecture
+- `index.html` — page structure and screen containers.
+- `styles.css` — responsive visual design.
+- `app.js` — question banks, scoring, topic classification, learning recommendations, practice feedback, retest, and progress comparison.
+
+The lesson/adaptation logic is a prepared-content fallback. No external AI service is connected in this prototype. It is intentionally usable without paid APIs or exposed secrets.
+
+## Limitations
+- Demo student only; no authentication, server, teacher console, or cross-device persistence.
+- Results are held in browser memory and reset when the page is refreshed.
+- Thresholds are prototype defaults, not validated educational standards.
+- The prepared adaptive rules demonstrate the product concept but are not a trained AI model.
+- This is a prototype for demonstration, not a validated educational assessment tool.
+
+## Jury demo walkthrough (about 3 minutes)
+1. Start the diagnostic and answer a mix of questions correctly and incorrectly.
+2. Review the overall score and the four topic-level classifications.
+3. Show how the learning path sorts topics by performance.
+4. Open a lesson; explain the worked example and hint.
+5. Answer the practice question incorrectly once to show supportive feedback, then continue to the challenge.
+6. Return to the learning path and start the retest.
+7. Compare the new scores with the diagnostic on **My progress**. Do not promise a specific improvement; the result depends on answers.

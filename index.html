@@ -1,165 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Crushers | Adaptive Learning</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Code Crushers | Adaptive Learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app" class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="logo">Code Crushers <span>AI</span></div>
-            <nav id="progress-nav" class="hidden">
-                <span id="nav-topic"></span>
-                <div class="progress-bar-mini"><div id="nav-progress-fill" class="fill"></div></div>
-            </nav>
-        </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Code Crushers home">
+        <span class="brand-mark">CC</span><span>code<span class="brand-light">crushers</span></span>
+      </a>
+      <div class="workspace-label">YOUR LEARNING SPACE</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item active" data-page="home"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="learn"><span>◈</span> Learning path</button>
+        <button class="nav-item" data-page="progress"><span>▥</span> My progress</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sdg-card"><div class="sdg-icon">4</div><div><b>Quality Education</b><small>UN Sustainable Development Goal</small></div></div>
+        <div class="profile"><div class="avatar">H</div><div><b>Demo Student</b><small>Learning explorer</small></div><span class="dots">•••</span></div>
+      </div>
+    </aside>
 
-        <!-- Main Content Area -->
-        <main id="main-content" class="main-content">
-            
-            <!-- 1. Welcome Screen -->
-            <section id="screen-welcome" class="screen active glass-panel">
-                <div class="welcome-content">
-                    <h1>AI-Powered <span class="highlight">Adaptive Learning</span></h1>
-                    <p class="subtitle">TechSprint 2026 • SDG 4: Quality Education</p>
-                    <p class="description">
-                        This system identifies where you struggle, adapts how it teaches, and measures if you actually improve. 
-                        We'll test you on four foundational programming concepts: Variables, Conditions, Loops, and Arrays.
-                    </p>
-                    <button id="btn-start-diagnostic" class="primary-btn glow-effect">Start Diagnostic Quiz</button>
-                </div>
-            </section>
+    <main class="main">
+      <header class="topbar"><div class="mobile-brand"><span class="brand-mark">CC</span> codecrushers</div><div class="breadcrumb">Workspace <span>/</span> <b id="crumb">Overview</b></div><div class="top-actions"><span class="demo-pill"><i></i> Interactive demo</span><button class="icon-button" id="resetBtn" title="Reset demo" aria-label="Reset demo">↻</button></div></header>
+      <section id="page-home" class="page active">
+        <div class="hero">
+          <div class="hero-copy"><div class="eyebrow"><span class="spark">✦</span> LEARN AT YOUR OWN PACE</div><h1>Small steps.<br><em>Real progress.</em></h1><p>A learning experience that understands what you know, spots what needs work, and helps you improve one concept at a time.</p><button class="primary-btn" id="startDiagnostic">Start diagnostic <span>→</span></button><div class="hero-note"><span class="check">✓</span> No pressure. Just a starting point.</div></div>
+          <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="code-window"><div class="window-top"><span></span><span></span><span></span><small>learn.py</small></div><div class="code-lines"><p><span class="ln">01</span> <b>def</b> <i>your_next_step</i>():</p><p><span class="ln">02</span> &nbsp;&nbsp;skills = <strong>[</strong><em>"curiosity"</em><strong>]</strong></p><p><span class="ln">03</span> &nbsp;&nbsp;<b>while</b> learning:</p><p><span class="ln">04</span> &nbsp;&nbsp;&nbsp;&nbsp;practice()</p><p><span class="ln">05</span> &nbsp;&nbsp;&nbsp;&nbsp;grow()</p><p><span class="ln">06</span> &nbsp;&nbsp;<b>return</b> progress</p></div><div class="code-footer"><span>● adaptive mode</span><span>↗</span></div></div><div class="floating-badge badge-top"><span>✦</span><div><b>Personalized</b><small>just for you</small></div></div><div class="floating-badge badge-bottom"><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i></div><div><b>Progress detected</b><small>Every answer counts</small></div></div></div>
+        </div>
+        <div class="section-heading"><div><div class="eyebrow muted">YOUR LEARNING JOURNEY</div><h2>Built around how you learn</h2></div><span class="section-caption">Diagnose → Learn → Retest</span></div>
+        <div class="feature-grid">
+          <article class="feature-card"><div class="feature-icon purple">◎</div><div class="feature-step">01 / DISCOVER</div><h3>Find your starting point</h3><p>A short quiz maps your strengths and learning gaps across four programming concepts.</p></article>
+          <article class="feature-card"><div class="feature-icon mint">↗</div><div class="feature-step">02 / PERSONALIZE</div><h3>A path that adapts</h3><p>Get bite-sized explanations and practice focused on the topics that need attention.</p></article>
+          <article class="feature-card"><div class="feature-icon peach">⌁</div><div class="feature-step">03 / MEASURE</div><h3>See what changed</h3><p>Retake a different set of questions and compare results before and after learning.</p></article>
+        </div>
+        <div class="topic-strip"><div><span class="topic-label">TODAY'S TOPICS</span><h3>Four foundations. One step at a time.</h3></div><div class="topic-chips"><span>⌘ Variables</span><span>◇ Conditions</span><span>↻ Loops</span><span>▦ Arrays</span></div></div>
+      </section>
 
-            <!-- 2. Quiz Screen (Diagnostic & Retest) -->
-            <section id="screen-quiz" class="screen glass-panel hidden">
-                <div class="quiz-header">
-                    <h2 id="quiz-title">Diagnostic Assessment</h2>
-                    <div class="question-tracker">Question <span id="current-q-num">1</span> of <span id="total-q-num">10</span></div>
-                </div>
-                <div class="question-container">
-                    <h3 id="question-text" class="question-text"></h3>
-                    <div id="options-container" class="options-grid">
-                        <!-- Options injected via JS -->
-                    </div>
-                </div>
-                <div class="quiz-footer">
-                    <div id="feedback-message" class="feedback hidden"></div>
-                    <button id="btn-next-question" class="primary-btn hidden">Next</button>
-                </div>
-            </section>
+      <section id="page-quiz" class="page">
+        <div class="quiz-wrap"><button class="back-link" id="quizBack">← Back to overview</button><div class="quiz-heading"><div class="eyebrow muted" id="quizLabel">DIAGNOSTIC ASSESSMENT</div><h1 id="quizTitle">Let's find your starting point.</h1><p id="quizSubtitle">Choose the best answer. This is a learning guide, not a grade.</p></div><div class="quiz-meta"><span id="questionCount">QUESTION 1 OF 8</span><span id="topicTag">VARIABLES</span></div><div class="progress-track"><div id="quizProgress" class="progress-fill"></div></div><article class="question-card"><div class="question-number" id="questionNumber">01</div><h2 id="questionText">Question text</h2><div id="answerOptions" class="answer-options"></div><div class="quiz-footer"><span id="selectionHint">Select one answer to continue.</span><button class="primary-btn" id="nextQuestion" disabled>Next question <span>→</span></button></div></article><p class="privacy-note">✦ Your answers help personalize this demo experience.</p></div>
+      </section>
 
-            <!-- 3. Gap Analysis / Results Screen -->
-            <section id="screen-analysis" class="screen glass-panel hidden">
-                <div class="analysis-header">
-                    <h2>Diagnostic Results & Gap Analysis</h2>
-                    <div class="score-card">
-                        <div class="score-circle">
-                            <span id="overall-score" class="score-value">0%</span>
-                        </div>
-                        <p>Overall Score</p>
-                    </div>
-                </div>
-                <div class="topics-analysis">
-                    <h3>Performance by Topic</h3>
-                    <div id="topics-grid" class="topics-grid">
-                        <!-- Topic cards injected here -->
-                    </div>
-                </div>
-                <div class="next-steps-panel">
-                    <h3>Recommended Learning Path</h3>
-                    <div id="learning-path" class="learning-path"></div>
-                    <button id="btn-start-learning" class="primary-btn glow-effect">Start Adaptive Learning</button>
-                </div>
-            </section>
+      <section id="page-results" class="page">
+        <div class="page-intro"><div class="eyebrow muted">YOUR LEARNING SNAPSHOT</div><h1>Your results, your next step.</h1><p>Every answer tells us a little more about what to practice next.</p></div>
+        <div id="resultsContent"></div>
+      </section>
 
-            <!-- 4. Learning Module Screen -->
-            <section id="screen-learning" class="screen glass-panel hidden">
-                <div class="learning-header">
-                    <h2 id="learning-topic-title">Learning: Topic</h2>
-                    <span id="learning-status-badge" class="badge">Weak</span>
-                </div>
-                
-                <div class="learning-content">
-                    <div class="theory-section">
-                        <h3>Explanation</h3>
-                        <p id="learning-explanation"></p>
-                    </div>
-                    <div class="example-section">
-                        <h3>Example</h3>
-                        <pre><code id="learning-example"></code></pre>
-                    </div>
-                    <div id="hint-section" class="hint-section hidden">
-                        <h3>💡 Hint</h3>
-                        <p id="learning-hint"></p>
-                    </div>
-                </div>
-                
-                <div class="practice-section">
-                    <h3>Adaptive Practice</h3>
-                    <p>Let's check your understanding.</p>
-                    <div class="question-container">
-                        <h4 id="practice-question-text" class="question-text"></h4>
-                        <div id="practice-options-container" class="options-grid"></div>
-                    </div>
-                    <div id="practice-feedback" class="feedback hidden"></div>
-                    <button id="btn-next-practice" class="primary-btn hidden">Continue</button>
-                </div>
-            </section>
+      <section id="page-learn" class="page">
+        <div class="page-intro"><div class="eyebrow muted">PERSONALIZED LEARNING PATH</div><h1>Learn what matters next.</h1><p>Your path prioritizes concepts based on your answers—not a one-size-fits-all lesson plan.</p></div>
+        <div id="learningContent"></div>
+      </section>
 
-            <!-- 5. Progress Dashboard (Final) -->
-            <section id="screen-dashboard" class="screen glass-panel hidden">
-                <div class="dashboard-header">
-                    <h2>Progress Dashboard</h2>
-                    <p>See how your personalized learning path improved your understanding.</p>
-                </div>
-                
-                <div class="comparison-cards">
-                    <div class="stat-card">
-                        <h4>Diagnostic Score</h4>
-                        <div id="final-diag-score" class="score-lg">0%</div>
-                    </div>
-                    <div class="stat-card highlight-card">
-                        <h4>Improvement</h4>
-                        <div id="final-improvement" class="score-lg positive">+0%</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Retest Score</h4>
-                        <div id="final-retest-score" class="score-lg">0%</div>
-                    </div>
-                </div>
+      <section id="page-module" class="page">
+        <button class="back-link" id="moduleBack">← Back to learning path</button>
+        <div id="moduleContent"></div>
+      </section>
 
-                <div class="topics-comparison">
-                    <h3>Topic Breakdown</h3>
-                    <div class="comparison-table-container">
-                        <table class="comparison-table">
-                            <thead>
-                                <tr>
-                                    <th>Topic</th>
-                                    <th>Diagnostic</th>
-                                    <th>Retest</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="comparison-tbody">
-                                <!-- Rows injected via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="final-actions">
-                    <button id="btn-restart" class="secondary-btn">Start Over</button>
-                </div>
-            </section>
+      <section id="page-progress" class="page">
+        <div class="page-intro"><div class="eyebrow muted">YOUR GROWTH, MADE VISIBLE</div><h1>Progress over perfection.</h1><p>Compare your diagnostic and retest scores to see where your learning journey is heading.</p></div>
+        <div id="progressContent"></div>
+      </section>
 
-        </main>
-    </div>
-    
-    <script src="data.js"></script>
-    <script src="app.js"></script>
+      <footer class="app-footer"><span>© 2026 Code Crushers</span><span>Built for TechSprint 2026 · SDG 4</span><span>Prototype demo · Results are calculated from your answers</span></footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
 </body>
 </html>
