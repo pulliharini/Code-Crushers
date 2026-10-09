@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Crushers | Adaptive Learning</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">Code Crushers <span>AI</span></div>
+            <nav id="progress-nav" class="hidden">
+                <span id="nav-topic"></span>
+                <div class="progress-bar-mini"><div id="nav-progress-fill" class="fill"></div></div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="main-content">
+            
+            <!-- 1. Welcome Screen -->
+            <section id="screen-welcome" class="screen active glass-panel">
+                <div class="welcome-content">
+                    <h1>AI-Powered <span class="highlight">Adaptive Learning</span></h1>
+                    <p class="subtitle">TechSprint 2026 • SDG 4: Quality Education</p>
+                    <p class="description">
+                        This system identifies where you struggle, adapts how it teaches, and measures if you actually improve. 
+                        We'll test you on four foundational programming concepts: Variables, Conditions, Loops, and Arrays.
+                    </p>
+                    <button id="btn-start-diagnostic" class="primary-btn glow-effect">Start Diagnostic Quiz</button>
+                </div>
+            </section>
+
+            <!-- 2. Quiz Screen (Diagnostic & Retest) -->
+            <section id="screen-quiz" class="screen glass-panel hidden">
+                <div class="quiz-header">
+                    <h2 id="quiz-title">Diagnostic Assessment</h2>
+                    <div class="question-tracker">Question <span id="current-q-num">1</span> of <span id="total-q-num">10</span></div>
+                </div>
+                <div class="question-container">
+                    <h3 id="question-text" class="question-text"></h3>
+                    <div id="options-container" class="options-grid">
+                        <!-- Options injected via JS -->
+                    </div>
+                </div>
+                <div class="quiz-footer">
+                    <div id="feedback-message" class="feedback hidden"></div>
+                    <button id="btn-next-question" class="primary-btn hidden">Next</button>
+                </div>
+            </section>
+
+            <!-- 3. Gap Analysis / Results Screen -->
+            <section id="screen-analysis" class="screen glass-panel hidden">
+                <div class="analysis-header">
+                    <h2>Diagnostic Results & Gap Analysis</h2>
+                    <div class="score-card">
+                        <div class="score-circle">
+                            <span id="overall-score" class="score-value">0%</span>
+                        </div>
+                        <p>Overall Score</p>
+                    </div>
+                </div>
+                <div class="topics-analysis">
+                    <h3>Performance by Topic</h3>
+                    <div id="topics-grid" class="topics-grid">
+                        <!-- Topic cards injected here -->
+                    </div>
+                </div>
+                <div class="next-steps-panel">
+                    <h3>Recommended Learning Path</h3>
+                    <div id="learning-path" class="learning-path"></div>
+                    <button id="btn-start-learning" class="primary-btn glow-effect">Start Adaptive Learning</button>
+                </div>
+            </section>
+
+            <!-- 4. Learning Module Screen -->
+            <section id="screen-learning" class="screen glass-panel hidden">
+                <div class="learning-header">
+                    <h2 id="learning-topic-title">Learning: Topic</h2>
+                    <span id="learning-status-badge" class="badge">Weak</span>
+                </div>
+                
+                <div class="learning-content">
+                    <div class="theory-section">
+                        <h3>Explanation</h3>
+                        <p id="learning-explanation"></p>
+                    </div>
+                    <div class="example-section">
+                        <h3>Example</h3>
+                        <pre><code id="learning-example"></code></pre>
+                    </div>
+                    <div id="hint-section" class="hint-section hidden">
+                        <h3>💡 Hint</h3>
+                        <p id="learning-hint"></p>
+                    </div>
+                </div>
+                
+                <div class="practice-section">
+                    <h3>Adaptive Practice</h3>
+                    <p>Let's check your understanding.</p>
+                    <div class="question-container">
+                        <h4 id="practice-question-text" class="question-text"></h4>
+                        <div id="practice-options-container" class="options-grid"></div>
+                    </div>
+                    <div id="practice-feedback" class="feedback hidden"></div>
+                    <button id="btn-next-practice" class="primary-btn hidden">Continue</button>
+                </div>
+            </section>
+
+            <!-- 5. Progress Dashboard (Final) -->
+            <section id="screen-dashboard" class="screen glass-panel hidden">
+                <div class="dashboard-header">
+                    <h2>Progress Dashboard</h2>
+                    <p>See how your personalized learning path improved your understanding.</p>
+                </div>
+                
+                <div class="comparison-cards">
+                    <div class="stat-card">
+                        <h4>Diagnostic Score</h4>
+                        <div id="final-diag-score" class="score-lg">0%</div>
+                    </div>
+                    <div class="stat-card highlight-card">
+                        <h4>Improvement</h4>
+                        <div id="final-improvement" class="score-lg positive">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Retest Score</h4>
+                        <div id="final-retest-score" class="score-lg">0%</div>
+                    </div>
+                </div>
+
+                <div class="topics-comparison">
+                    <h3>Topic Breakdown</h3>
+                    <div class="comparison-table-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Topic</th>
+                                    <th>Diagnostic</th>
+                                    <th>Retest</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-tbody">
+                                <!-- Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="final-actions">
+                    <button id="btn-restart" class="secondary-btn">Start Over</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
